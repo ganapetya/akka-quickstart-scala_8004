@@ -4,6 +4,10 @@ package com.peter.actors.game
 import akka.actor.{ActorRef, FSM, Props}
 
 
+/**
+  * States
+  */
+
 sealed trait State
 
 case object Inactive extends State
@@ -12,6 +16,10 @@ case object OnDuty extends State
 
 case object Hit extends State
 
+
+/**
+  * State data (Or "data, contained by the state")
+  */
 
 sealed trait Data
 
@@ -27,11 +35,19 @@ class StrikesDataStorage(val startTime: Long) extends Data {
 
 }
 
+/**
+  * Factory of computers
+  */
 
 object ComputerFSM{
   def props(tank:ActorRef) = Props(new ComputerFSM(tank))
 }
 
+
+/**
+  * Computer itself
+  *
+  */
 class ComputerFSM(tank: ActorRef) extends FSM[State, Data] {
 
   startWith(Inactive, Uninitialized)

@@ -3,6 +3,11 @@ package com.peter.actors.game
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
 
+/**
+  *
+  * Messages , defined as case objects
+  */
+
 case object Start
 
 case object Started
@@ -22,23 +27,33 @@ case object Advance
 case object StartComputer
 
 
+/**
+  * Start ("main") point
+  */
+
 object GameStart extends App {
 
-  val system: ActorSystem = ActorSystem("gameAkka")
+  val system = ActorSystem("gameAkka")
 
-  val field: ActorRef = system.actorOf(BattleFiled.props, "field")
+  val field = system.actorOf(BattleFiled.props, "field")
 
   field ! Start
 
 }
 
+/**
+  * The BattleFiled factory
+  */
+
 object BattleFiled {
   def props = Props(new BattleFiled)
 }
 
+/**
+  * The BattleFiled itself
+  */
+
 class BattleFiled extends Actor {
-
-
 
   val maxTanks = 10
 
@@ -48,7 +63,7 @@ class BattleFiled extends Actor {
       println("Starting the game...")
 
       for (n <- 1 to maxTanks) {
-        val tank = context.actorOf(Tank.props(), "tank" + n)
+        val tank = context.actorOf(Tank.props, "tank" + n)
         tank ! Start
       }
       //sender ! Started
@@ -56,9 +71,17 @@ class BattleFiled extends Actor {
   }
 }
 
+/**
+  * Tanks factory
+  */
+
 object Tank {
-  def props() = Props(new Tank())
+  def props() = Props(new Tank)
 }
+
+/**
+  * The tank actor
+  */
 
 class Tank() extends Actor {
 
@@ -72,10 +95,14 @@ class Tank() extends Actor {
   var distance = 0
   var step = 2
   var maxDistance = 500
-  var shell = 0
+  var shotShellsCounter = 0
   var arrivedShellsCounter = 0
   var computerInterrupt = false
 
+
+  /**
+    * Tank owns a computer instance - Tank is a computer Parent
+    */
   val computer = context.actorOf(ComputerFSM.props(self))
   computer ! StartComputer
 
@@ -93,8 +120,8 @@ class Tank() extends Actor {
 
       if (distance % 10 == 0) {
             println("Tank " + self + " shoots!")
-            shell = shell + 1
-            val shellActor = context.actorOf(Shell.props(distance), "shell-" + shell)
+            shotShellsCounter = shotShellsCounter + 1
+            val shellActor = context.actorOf(Shell.props(distance), "shell-" + shotShellsCounter)
             shellActor ! Shoot
       }
 
@@ -120,10 +147,19 @@ class Tank() extends Actor {
 }
 
 
+/**
+  * Shell factory
+  */
+
 object Shell {
   def props(distance: Int) = Props(new Shell(distance))
 }
 
+
+/**
+  *  The shell itself
+  *
+  */
 class Shell(var distance: Int) extends Actor {
 
   var step = 3
